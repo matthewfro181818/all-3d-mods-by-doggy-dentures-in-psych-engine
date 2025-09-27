@@ -437,6 +437,11 @@ class PlayState extends MusicBeatState {
 		startCharacterPos(boyfriend);
 		boyfriendGroup.add(boyfriend);
 
+		// attach models if characters use them
+		initModelCharacter(bf);
+		initModelCharacter(dad);
+		initModelCharacter(gf);
+
 		if (stageData.objects != null && stageData.objects.length > 0) {
 			var list:Map<String, FlxSprite> = StageData.addObjectsToState(stageData.objects, !stageData.hide_girlfriend ? gfGroup : null, dadGroup,
 				boyfriendGroup, this);
@@ -686,11 +691,12 @@ class PlayState extends MusicBeatState {
 			checkEventNote();
 	}
 
-	private function initModelCharacter(char:Character):Void {
-		if (char.isModel) {
-			char.model = new ModelThing(char.modelType, char.modelName, modelView, char.modelScale, char.modelSpeed, char.initYaw, char.initPitch,
-				char.initRoll, 1.0, // alpha
-				char.initX, char.initY, char.initZ, char.noLoopList, char.md5Anims);
+	function initModelCharacter(char:Character):Void {
+		if (char.usesModel) {
+			char.model = new ModelThing(char.modelType, char.modelName, Main.modelView, // always reference the one from Main
+				char.modelScale, char.modelSpeed,
+				char.initYaw, char.initPitch, char.initRoll);
+
 			models.push(char.model);
 		}
 	}
@@ -1732,11 +1738,9 @@ class PlayState extends MusicBeatState {
 
 		super.update(elapsed);
 
-		// Update all models
+		// update every model through the global ModelView
 		for (m in models) {
-			if (m.modelView != null && m.modelView.view != null) {
-				m.modelView.view.render();
-			}
+			Main.modelView.onEnterFrame();
 		}
 
 		setOnScripts('curDecStep', curDecStep);
@@ -3252,12 +3256,11 @@ class PlayState extends MusicBeatState {
 		instance = null;
 		super.destroy();
 
-		// Clean up models
+		super.destroy();
+
+		// cleanup models
 		for (m in models) {
-			if (m != null) {
-				m.destroy();
-				m.begoneEventListeners();
-			}
+			m.dispose();
 		}
 		models = [];
 	}
