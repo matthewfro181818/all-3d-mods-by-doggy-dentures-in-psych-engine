@@ -438,7 +438,7 @@ class PlayState extends MusicBeatState {
 		boyfriendGroup.add(boyfriend);
 
 		// attach models if characters use them
-		initModelCharacter(bf);
+		initModelCharacter(boyfriend);
 		initModelCharacter(dad);
 		initModelCharacter(gf);
 
@@ -692,12 +692,9 @@ class PlayState extends MusicBeatState {
 	}
 
 	function initModelCharacter(char:Character):Void {
-		if (char.usesModel) {
-			char.model = new ModelThing(char.modelType, char.modelName, Main.modelView, // always reference the one from Main
-				char.modelScale, char.modelSpeed,
-				char.initYaw, char.initPitch, char.initRoll);
-
-			models.push(char.model);
+		if (char.isModel) {
+			char.model = new ModelThing(char.modelType, char.modelName, Main.modelView, char.modelScale, char.modelSpeed, char.initYaw, char.initPitch,
+				char.initRoll, char.noLoopList, char.md5Anims);
 		}
 	}
 
@@ -1740,8 +1737,9 @@ class PlayState extends MusicBeatState {
 
 		// update every model through the global ModelView
 		for (m in models) {
-			Main.modelView.onEnterFrame();
+			m = null; // or call a cleanup if your ModelThing has one
 		}
+		models = [];
 
 		setOnScripts('curDecStep', curDecStep);
 		setOnScripts('curDecBeat', curDecBeat);
@@ -1916,6 +1914,13 @@ class PlayState extends MusicBeatState {
 
 		setOnScripts('botPlay', cpuControlled);
 		callOnScripts('onUpdatePost', [elapsed]);
+
+		super.update(elapsed);
+
+		// === Update 3D models ===
+		if (Main.modelView != null) {
+			Main.modelView.update();
+		}
 	}
 
 	// Health icon updaters
@@ -3254,15 +3259,12 @@ class PlayState extends MusicBeatState {
 
 		NoteSplash.configs.clear();
 		instance = null;
-		super.destroy();
 
 		super.destroy();
 
-		// cleanup models
-		for (m in models) {
-			m.dispose();
+		if (Main.modelView != null) {
+			Main.modelView.clear();
 		}
-		models = [];
 	}
 
 	var lastStepHit:Int = -1;
