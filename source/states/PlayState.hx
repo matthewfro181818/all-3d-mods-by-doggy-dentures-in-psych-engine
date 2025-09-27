@@ -71,9 +71,10 @@ import crowplexus.hscript.Printer;
  * "function triggerEvent" - Called when the song hits your event's timestamp, this is probably what you were looking for
 **/
 class PlayState extends MusicBeatState {
-// === 3D model support ===
-public static var modelView:ModelView; // shared model view
-public var models:Array<ModelThing> = []; // list of active models
+	// === 3D model support ===
+	public static var modelView:ModelView; // shared model view
+
+	public var models:Array<ModelThing> = []; // list of active models
 
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
@@ -661,7 +662,7 @@ public var models:Array<ModelThing> = []; // list of active models
 
 		// === Initialize 3D scene ===
 		modelView = new ModelView();
-		addChild(modelView);
+		openfl.Lib.current.addChild(Main.modelView.view);
 
 		// Example: load characters (replace with your real character spawns)
 		dad = new Character(100, 100, "steve", false);
@@ -1733,10 +1734,11 @@ public var models:Array<ModelThing> = []; // list of active models
 
 		// Update all models
 		for (m in models) {
-			if (m.fullyLoaded) {
-				m.modelView.onEnterFrame();
+			if (m.modelView != null && m.modelView.view != null) {
+				m.modelView.view.render();
 			}
 		}
+
 		setOnScripts('curDecStep', curDecStep);
 		setOnScripts('curDecBeat', curDecBeat);
 
