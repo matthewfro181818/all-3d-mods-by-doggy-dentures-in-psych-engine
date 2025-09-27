@@ -62,6 +62,8 @@ class Main extends Sprite
 
 	// You can pretty much ignore everything from here on - your code should go in your states.
 
+	public static var modelView:ModelView;
+
 	public static function main():Void
 	{
 		Lib.current.addChild(new Main());
@@ -92,6 +94,8 @@ class Main extends Sprite
 
 		FlxG.save.bind('funkin', CoolUtil.getSavePath());
 		Highscore.load();
+
+		modelView = new ModelView();
 
 		#if HSCRIPT_ALLOWED
 		Iris.warn = function(x, ?pos:haxe.PosInfos) {
