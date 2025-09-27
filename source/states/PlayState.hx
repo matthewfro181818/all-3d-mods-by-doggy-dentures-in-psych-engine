@@ -665,9 +665,9 @@ class PlayState extends MusicBeatState {
 
 		super.create();
 
-		// === Initialize 3D scene ===
-		modelView = new ModelView();
-		openfl.Lib.current.addChild(Main.modelView.view);
+		// Add the 3D sprite
+		if (Main.modelView != null)
+			add(Main.modelView);
 
 		// Example: load characters (replace with your real character spawns)
 		dad = new Character(100, 100, "steve", false);
@@ -1735,11 +1735,8 @@ class PlayState extends MusicBeatState {
 
 		super.update(elapsed);
 
-		// update every model through the global ModelView
-		for (m in models) {
-			m = null; // or call a cleanup if your ModelThing has one
-		}
-		models = [];
+		if (Main.modelView != null)
+			Main.modelView.updateView();
 
 		setOnScripts('curDecStep', curDecStep);
 		setOnScripts('curDecBeat', curDecBeat);
