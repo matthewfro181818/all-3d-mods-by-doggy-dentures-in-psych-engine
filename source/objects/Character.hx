@@ -3,16 +3,10 @@ package objects;
 import backend.animation.PsychAnimationController;
 import away3d.events.AnimationStateEvent;
 import away3d.library.Asset3DLibrary;
-import away3d.core.base.data.Face;
-import away3d.errors.AbstractMethodError;
 import flixel.util.FlxSort;
-import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxDestroyUtil;
 import flixel.text.FlxText;
 import flixel.FlxSprite;
-import flixel.tweens.FlxTween;
-import flixel.animation.FlxBaseAnimation;
-import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.Assets;
 import haxe.Json;
 import backend.Song;
@@ -64,7 +58,7 @@ class Character extends FlxSprite {
 	public var skipDance:Bool = false;
 
 	public var healthIcon:String = 'face';
-	public var animationsArray:Array<Dynamic> = [];
+	public var animationsArray:Array<AnimArray> = [];
 	public var positionArray:Array<Float> = [0, 0];
 	public var cameraPosition:Array<Float> = [0, 0];
 	public var healthColorArray:Array<Int> = [255, 0, 0];
@@ -81,7 +75,7 @@ class Character extends FlxSprite {
 	public var editorIsPlayer:Null<Bool> = null;
 
 	// === AnimateAtlas ===
-	public var isAnimateAtlas(default, null):Bool = false;
+	public var isAnimateAtlas:Bool = false;
 	#if flxanimate
 	public var atlas:FlxAnimate;
 	#end
@@ -121,6 +115,7 @@ class Character extends FlxSprite {
 		this.isPlayer = isPlayer;
 		changeCharacter(character);
 		isModel = false;
+
 		switch (curCharacter) {
 			case 'pico-speaker':
 				skipDance = true;
@@ -207,8 +202,7 @@ class Character extends FlxSprite {
 		if (!Assets.exists(path))
 		#end
 		{
-			path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER +
-				'.json'); // If a character couldn't be found, change him to BF just to prevent a crash
+			path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER + '.json');
 			missingCharacter = true;
 			missingText = new FlxText(0, 0, 300, 'ERROR:\n$character.json', 16);
 			missingText.alignment = CENTER;
@@ -256,15 +250,11 @@ class Character extends FlxSprite {
 				holdTimer = 0;
 			}
 
-			if (spinYaw)
-				model.addYaw(elapsed * spinYawVal);
-			if (spinPitch)
-				model.addPitch(elapsed * spinPitchVal);
-			if (spinRoll)
-				model.addRoll(elapsed * spinRollVal);
+			if (spinYaw) model.addYaw(elapsed * spinYawVal);
+			if (spinPitch) model.addPitch(elapsed * spinPitchVal);
+			if (spinRoll) model.addRoll(elapsed * spinRollVal);
 		} else {
-			if (isAnimateAtlas)
-				atlas.update(elapsed);
+			if (isAnimateAtlas) atlas.update(elapsed);
 
 			if (getAnimationName() != null && getAnimationName().startsWith("sing"))
 				holdTimer += elapsed;
@@ -353,14 +343,15 @@ class Character extends FlxSprite {
 		}
 
 		if (isModel && model != null) {
-			model.x = x + initX;
-			model.y = y + initY;
-			model.z = initZ;
-			model.setRotation(initYaw, initPitch, initRoll);
-			model.setScale(modelScale);
-			model.setVisible(visible);
-			model.setAlpha(alpha);
-			model.render(); // <-- key draw call
+			model.render(x + initX, y + initY, initZ);
+			if (model.mesh != null) {
+				model.mesh.rotationX = initPitch;
+				model.mesh.rotationY = initYaw;
+				model.mesh.rotationZ = initRoll;
+				model.mesh.visible = visible;
+				if (model.mesh.material != null)
+					model.mesh.material.alpha = alpha;
+			}
 			alpha = lastAlpha;
 			color = lastColor;
 			return;
@@ -402,4 +393,70 @@ class Character extends FlxSprite {
 		}
 	}
 	#end
+
+	// === Compatibility Helpers ===
+	public inline function isAnimationNull():Bool {
+		if (isModel) return model == null || model.currentAnim == null;
+		return !isAnimateAtlas ? (animation.curAnim == null) : (atlas.anim.curInstance == null || atlas.anim.curSymbol == null);
+	}
+
+	public inline function isAnimationFinished():Bool {
+		if (isModel) return false;
+		if (isAnimationNull()) return false;
+		return !isAnimateAtlas ? animation.curAnim.finished : atlas.anim.finished;
+	}
+
+	public function finishAnimation():Void {
+		if (isModel) return;
+		if (isAnimationNull()) return;
+		if (!isAnimateAtlas) animation.curAnim.finish();
+		else atlas.anim.curFrame = atlas.anim.length - 1;
+	}
+
+	public var animPaused(get, set):Bool;
+	private function get_animPaused():Bool {
+		if (isAnimationNull()) return false;
+		return !isAnimateAtlas ? animation.curAnim.paused : !atlas.anim.isPlaying;
+	}
+	private function set_animPaused(value:Bool):Bool {
+		if (isAnimationNull()) return value;
+		if (!isAnimateAtlas) animation.curAnim.paused = value;
+		else {
+			if (value) atlas.pauseAnimation();
+			else atlas.resumeAnimation();
+		}
+		return value;
+	}
+
+	public var danceEveryNumBeats:Int = 2;
+	private var settingCharacterUp:Bool = true;
+	public function recalculateDanceIdle():Void {
+		var lastDanceIdle:Bool = danceIdle;
+		danceIdle = (hasAnimation('danceLeft' + idleSuffix) && hasAnimation('danceRight' + idleSuffix));
+
+		if (settingCharacterUp) {
+			danceEveryNumBeats = (danceIdle ? 1 : 2);
+		} else if (lastDanceIdle != danceIdle) {
+			var calc:Float = danceEveryNumBeats;
+			if (danceIdle) calc /= 2; else calc *= 2;
+			danceEveryNumBeats = Math.round(Math.max(calc, 1));
+		}
+		settingCharacterUp = false;
+	}
+
+	private function loadMappedAnims():Void {
+		try {
+			var songData:SwagSong = Song.getChart('picospeaker', Paths.formatToSongPath(Song.loadedSongName));
+			if (songData != null)
+				for (section in songData.notes)
+					for (songNotes in section.sectionNotes)
+						animationNotes.push(songNotes);
+
+			TankmenBG.animationNotes = animationNotes;
+			animationNotes.sort((a, b) -> FlxSort.byValues(FlxSort.ASCENDING, a[0], b[0]));
+		}
+		catch (e:Dynamic) {
+			trace("loadMappedAnims failed: " + e);
+		}
+	}
 }
