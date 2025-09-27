@@ -28,10 +28,9 @@ import lime.graphics.Image;
 #end
 
 #if desktop
-import backend.ALSoftConfig; // Just to make sure DCE doesn't remove this, since it's not directly referenced anywhere else.
+import backend.ALSoftConfig;
 #end
 
-//crash handler stuff
 #if CRASH_HANDLER
 import openfl.events.UncaughtErrorEvent;
 import haxe.CallStack;
@@ -40,27 +39,26 @@ import haxe.io.Path;
 
 import backend.Highscore;
 
-// NATIVE API STUFF, YOU CAN IGNORE THIS AND SCROLL //
-#if (linux && !debug)
-@:cppInclude('./external/gamemode_client.h')
-@:cppFileCode('#define GAMEMODE_AUTO')
-#end
+// === 3D Imports ===
+import away3d.containers.View3D;
+import away3d.lights.DirectionalLight;
+import away3d.materials.lightpickers.StaticLightPicker;
+import away3d.controllers.HoverController;
+import ModelView;
 
-// // // // // // // // //
 class Main extends Sprite
 {
 	public static final game = {
-		width: 1280, // WINDOW width
-		height: 720, // WINDOW height
-		initialState: TitleState, // initial game state
-		framerate: 60, // default framerate
-		skipSplash: true, // if the default flixel splash screen should be skipped
-		startFullscreen: false // if the game should start at fullscreen mode
+		width: 1280,
+		height: 720,
+		initialState: TitleState,
+		framerate: 60,
+		skipSplash: true,
+		startFullscreen: false
 	};
 
 	public static var fpsVar:FPSCounter;
-
-	// You can pretty much ignore everything from here on - your code should go in your states.
+	public static var modelView:ModelView;
 
 	public static function main():Void
 	{
@@ -75,7 +73,6 @@ class Main extends Sprite
 		backend.Native.fixScaling();
 		#end
 
-		// Credits to MAJigsaw77 (he's the og author for this code)
 		#if android
 		Sys.setCwd(Path.addTrailingSlash(Context.getExternalFilesDir()));
 		#elseif ios
@@ -166,7 +163,7 @@ class Main extends Sprite
 		}
 		#end
 
-		#if (linux || mac) // fix the app icon not showing up on the Linux Panel / Mac Dock
+		#if (linux || mac)
 		var icon = Image.fromFile("icon.png");
 		Lib.current.stage.window.setIcon(icon);
 		#end
@@ -188,7 +185,6 @@ class Main extends Sprite
 		DiscordClient.prepare();
 		#end
 
-		// shader coords fix
 		FlxG.signals.gameResized.add(function (w, h) {
 		     if (FlxG.cameras != null) {
 			   for (cam in FlxG.cameras.list) {
@@ -196,24 +192,24 @@ class Main extends Sprite
 					resetSpriteCache(cam.flashSprite);
 			   }
 			}
-
 			if (FlxG.game != null)
 			resetSpriteCache(FlxG.game);
 		});
+
+		// === Initialize global ModelView for 3D models ===
+		modelView = new ModelView();
+		addChild(modelView);
 	}
 
 	static function resetSpriteCache(sprite:Sprite):Void {
 		@:privateAccess {
-		        sprite.__cacheBitmap = null;
+			sprite.__cacheBitmap = null;
 			sprite.__cacheBitmapData = null;
 		}
 	}
 
-	// Code was entirely made by sqirra-rng for their fnf engine named "Izzy Engine", big props to them!!!
-	// very cool person for real they don't get enough credit for their work
 	#if CRASH_HANDLER
-	function onCrash(e:UncaughtErrorEvent):Void
-	{
+	function onCrash(e:UncaughtErrorEvent):Void {
 		var errMsg:String = "";
 		var path:String;
 		var callStack:Array<StackItem> = CallStack.exceptionStack(true);
@@ -224,10 +220,8 @@ class Main extends Sprite
 
 		path = "./crash/" + "PsychEngine_" + dateNow + ".txt";
 
-		for (stackItem in callStack)
-		{
-			switch (stackItem)
-			{
+		for (stackItem in callStack) {
+			switch (stackItem) {
 				case FilePos(s, file, line, column):
 					errMsg += file + " (line " + line + ")\n";
 				default:
@@ -236,8 +230,6 @@ class Main extends Sprite
 		}
 
 		errMsg += "\nUncaught Error: " + e.error;
-		// remove if you're modding and want the crash log message to contain the link
-		// please remember to actually modify the link for the github page to report the issues to.
 		#if officialBuild
 		errMsg += "\nPlease report this error to the GitHub page: https://github.com/ShadowMario/FNF-PsychEngine";
 		#end
