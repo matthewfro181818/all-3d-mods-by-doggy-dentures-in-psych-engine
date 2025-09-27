@@ -1,7 +1,6 @@
 package objects;
 
 import backend.animation.PsychAnimationController;
-
 import away3d.events.AnimationStateEvent;
 import away3d.library.Asset3DLibrary;
 import away3d.core.base.data.Face;
@@ -14,17 +13,40 @@ import flixel.FlxSprite;
 import flixel.tweens.FlxTween;
 import flixel.animation.FlxBaseAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
-
 import openfl.utils.Assets;
 import haxe.Json;
-
 import backend.Song;
 import states.stages.objects.TankmenBG;
 
-class Character extends FlxSprite
-{
+typedef CharacterFile = {
+	var animations:Array<AnimArray>;
+	var image:String;
+	var scale:Float;
+	var sing_duration:Float;
+	var healthicon:String;
+
+	var position:Array<Float>;
+	var camera_position:Array<Float>;
+	var flip_x:Bool;
+	var no_antialiasing:Bool;
+	var healthbar_colors:Array<Int>;
+	var vocals_file:String;
+	@:optional var _editor_isPlayer:Null<Bool>;
+}
+
+typedef AnimArray = {
+	var anim:String;
+	var name:String;
+	var fps:Int;
+	var loop:Bool;
+	var indices:Array<Int>;
+	var offsets:Array<Int>;
+}
+
+class Character extends FlxSprite {
 	// === Shared ===
 	public static final DEFAULT_CHARACTER:String = 'bf';
+
 	public var animOffsets:Map<String, Array<Dynamic>> = [];
 	public var debugMode:Bool = false;
 	public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();
@@ -89,19 +111,18 @@ class Character extends FlxSprite
 	public var initZ:Float = 0;
 
 	private var _lastPlayedAnimation:String = "";
+
 	public var danced:Bool = false;
 
 	// === Construct ===
-	public function new(x:Float, y:Float, ?character:String = 'bf', ?isPlayer:Bool = false)
-	{
+	public function new(x:Float, y:Float, ?character:String = 'bf', ?isPlayer:Bool = false) {
 		super(x, y);
 		animation = new PsychAnimationController(this);
 		this.isPlayer = isPlayer;
-		changeCharacter(character);	
+		changeCharacter(character);
 		isModel = false;
-		switch(curCharacter)
-		{			
-                        case 'pico-speaker':
+		switch (curCharacter) {
+			case 'pico-speaker':
 				skipDance = true;
 				loadMappedAnims();
 				playAnim("shoot1");
@@ -112,7 +133,7 @@ class Character extends FlxSprite
 				modelType = "md2";
 				modelName = "steve";
 				modelScale = 30;
-				modelSpeed = ["default" => 126/75];
+				modelSpeed = ["default" => 126 / 75];
 				noLoopList = ["idle"];
 				initYaw = -45;
 				initY = -28;
@@ -123,7 +144,7 @@ class Character extends FlxSprite
 				modelName = "doll";
 				modelScale = 15;
 				modelSpeed = ["default" => 1.66, "idle" => 1];
-				noLoopList = ["singUP","singDOWN","singLEFT","singRIGHT"];
+				noLoopList = ["singUP", "singDOWN", "singLEFT", "singRIGHT"];
 				initYaw = -45;
 
 			case "crash":
@@ -132,7 +153,7 @@ class Character extends FlxSprite
 				modelName = "crash";
 				modelScale = 15;
 				modelSpeed = ["default" => 2.6, "idle" => 1.8];
-				noLoopList = ["idle","singUP","singDOWN","singLEFT","singRIGHT"];
+				noLoopList = ["idle", "singUP", "singDOWN", "singLEFT", "singRIGHT"];
 				initYaw = -45;
 				initY = -140;
 				initZ = -25;
@@ -173,8 +194,7 @@ class Character extends FlxSprite
 		}
 	}
 
-	public function changeCharacter(character:String)
-	{
+	public function changeCharacter(character:String) {
 		animationsArray = [];
 		animOffsets = [];
 		curCharacter = character;
@@ -187,22 +207,20 @@ class Character extends FlxSprite
 		if (!Assets.exists(path))
 		#end
 		{
-			path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER + '.json'); //If a character couldn't be found, change him to BF just to prevent a crash
+			path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER +
+				'.json'); // If a character couldn't be found, change him to BF just to prevent a crash
 			missingCharacter = true;
 			missingText = new FlxText(0, 0, 300, 'ERROR:\n$character.json', 16);
 			missingText.alignment = CENTER;
 		}
 
-		try
-		{
+		try {
 			#if MODS_ALLOWED
 			loadCharacterFile(Json.parse(File.getContent(path)));
 			#else
 			loadCharacterFile(Json.parse(Assets.getText(path)));
 			#end
-		}
-		catch(e:Dynamic)
-		{
+		} catch (e:Dynamic) {
 			trace('Error loading character file of "$character": $e');
 		}
 
@@ -213,8 +231,7 @@ class Character extends FlxSprite
 	}
 
 	// === JSON loading ===
-	private function loadFromJson(character:String)
-	{
+	private function loadFromJson(character:String) {
 		var characterPath:String = 'characters/$character.json';
 		var path:String = Paths.getPath(characterPath, TEXT);
 		try {
@@ -223,35 +240,38 @@ class Character extends FlxSprite
 			#else
 			loadCharacterFile(Json.parse(Assets.getText(path)));
 			#end
-		} catch(e:Dynamic) {
+		} catch (e:Dynamic) {
 			trace('Error loading $character: $e');
 		}
 	}
 
 	// === Update ===
-	override function update(elapsed:Float)
-	{
-		if(isModel){
-			if(model!=null && model.currentAnim!=null && model.currentAnim.startsWith("sing"))
+	override function update(elapsed:Float) {
+		if (isModel) {
+			if (model != null && model.currentAnim != null && model.currentAnim.startsWith("sing"))
 				holdTimer += elapsed;
 
-			if(!isPlayer && holdTimer >= Conductor.stepCrochet*0.0011*singDuration){
+			if (!isPlayer && holdTimer >= Conductor.stepCrochet * 0.0011 * singDuration) {
 				dance();
 				holdTimer = 0;
 			}
 
-			if(spinYaw) model.addYaw(elapsed*spinYawVal);
-			if(spinPitch) model.addPitch(elapsed*spinPitchVal);
-			if(spinRoll) model.addRoll(elapsed*spinRollVal);
-		}
-		else {
-			if(isAnimateAtlas) atlas.update(elapsed);
+			if (spinYaw)
+				model.addYaw(elapsed * spinYawVal);
+			if (spinPitch)
+				model.addPitch(elapsed * spinPitchVal);
+			if (spinRoll)
+				model.addRoll(elapsed * spinRollVal);
+		} else {
+			if (isAnimateAtlas)
+				atlas.update(elapsed);
 
-			if(getAnimationName()!=null && getAnimationName().startsWith("sing"))
+			if (getAnimationName() != null && getAnimationName().startsWith("sing"))
 				holdTimer += elapsed;
-			else if(isPlayer) holdTimer = 0;
+			else if (isPlayer)
+				holdTimer = 0;
 
-			if(!isPlayer && holdTimer >= Conductor.stepCrochet*0.0011*singDuration){
+			if (!isPlayer && holdTimer >= Conductor.stepCrochet * 0.0011 * singDuration) {
 				dance();
 				holdTimer = 0;
 			}
@@ -260,12 +280,11 @@ class Character extends FlxSprite
 	}
 
 	// === Anim control ===
-	public function playAnim(name:String, force:Bool=false, reversed:Bool=false, frame:Int=0):Void
-	{
+	public function playAnim(name:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
 		specialAnim = false;
 
-		if(isModel){
-			if(modelType=="md5" && md5Anims.exists(name))
+		if (isModel) {
+			if (modelType == "md5" && md5Anims.exists(name))
 				model.playAnim(md5Anims.get(name), force, frame);
 			else
 				model.playAnim(name, force, frame);
@@ -273,60 +292,67 @@ class Character extends FlxSprite
 			return;
 		}
 
-		if(!isAnimateAtlas) animation.play(name, force, reversed, frame);
+		if (!isAnimateAtlas)
+			animation.play(name, force, reversed, frame);
 		else {
 			atlas.anim.play(name, force, reversed, frame);
 			atlas.update(0);
 		}
 		_lastPlayedAnimation = name;
 
-		if (hasAnimation(name)){
+		if (hasAnimation(name)) {
 			var daOffset = animOffsets.get(name);
 			offset.set(daOffset[0], daOffset[1]);
 		}
 	}
 
 	// === Dance ===
-	public function dance()
-	{
-		if(isModel){
-			if(!noLoopList.contains("idle")) playAnim("idle", true);
-		}
-		else {
-			if(danceIdle){
+	public function dance() {
+		if (isModel) {
+			if (!noLoopList.contains("idle"))
+				playAnim("idle", true);
+		} else {
+			if (danceIdle) {
 				danced = !danced;
-				if(danced) playAnim("danceRight"+idleSuffix);
-				else playAnim("danceLeft"+idleSuffix);
-			}
-			else if(hasAnimation("idle"+idleSuffix)) playAnim("idle"+idleSuffix);
+				if (danced)
+					playAnim("danceRight" + idleSuffix);
+				else
+					playAnim("danceLeft" + idleSuffix);
+			} else if (hasAnimation("idle" + idleSuffix))
+				playAnim("idle" + idleSuffix);
 		}
 	}
 
 	// === End-of-anim ===
-	function animationEnd(name:String)
-	{
-		switch (curCharacter)
-		{
-			case "skeleton","endo","crash":
-				if(name.startsWith("sing")) playAnim("idle",true);
+	function animationEnd(name:String) {
+		switch (curCharacter) {
+			case "skeleton", "endo", "crash":
+				if (name.startsWith("sing"))
+					playAnim("idle", true);
 		}
 	}
 
 	// === Helpers ===
-	inline public function hasAnimation(anim:String):Bool return animOffsets.exists(anim);
-	inline public function getAnimationName():String return _lastPlayedAnimation;
+	inline public function hasAnimation(anim:String):Bool
+		return animOffsets.exists(anim);
 
-	public function addOffset(name:String,x:Float=0,y:Float=0) animOffsets[name]=[x,y];
+	inline public function getAnimationName():String
+		return _lastPlayedAnimation;
+
+	public function addOffset(name:String, x:Float = 0, y:Float = 0)
+		animOffsets[name] = [x, y];
 
 	// === Draw override ===
 	#if flxanimate
-	public override function draw()
-	{
+	public override function draw() {
 		var lastAlpha:Float = alpha;
 		var lastColor:FlxColor = color;
-		if(missingCharacter){ alpha *= 0.6; color = FlxColor.BLACK; }
+		if (missingCharacter) {
+			alpha *= 0.6;
+			color = FlxColor.BLACK;
+		}
 
-		if(isModel && model!=null){
+		if (isModel && model != null) {
 			model.x = x + initX;
 			model.y = y + initY;
 			model.z = initZ;
@@ -335,15 +361,17 @@ class Character extends FlxSprite
 			model.setVisible(visible);
 			model.setAlpha(alpha);
 			model.render(); // <-- key draw call
-			alpha = lastAlpha; color = lastColor;
+			alpha = lastAlpha;
+			color = lastColor;
 			return;
 		}
 
-		if(isAnimateAtlas){
-			if(atlas.anim.curInstance != null){
+		if (isAnimateAtlas) {
+			if (atlas.anim.curInstance != null) {
 				copyAtlasValues();
 				atlas.draw();
-				alpha = lastAlpha; color = lastColor;
+				alpha = lastAlpha;
+				color = lastColor;
 			}
 			return;
 		}
@@ -353,8 +381,7 @@ class Character extends FlxSprite
 	#end
 
 	#if flxanimate
-	public function copyAtlasValues()
-	{
+	public function copyAtlasValues() {
 		@:privateAccess {
 			atlas.cameras = cameras;
 			atlas.scrollFactor = scrollFactor;
