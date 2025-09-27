@@ -197,8 +197,8 @@ class Main extends Sprite
 		});
 
 		// === Initialize global ModelView for 3D models ===
-		modelView = new ModelView();
-		addChild(modelView);
+		var modelView = Main.modelView;
+		addChild(modelView.view); // if ModelView wraps View3D, otherwise just addChild(modelView)
 	}
 
 	static function resetSpriteCache(sprite:Sprite):Void {

@@ -71,6 +71,10 @@ import crowplexus.hscript.Printer;
  * "function triggerEvent" - Called when the song hits your event's timestamp, this is probably what you were looking for
 **/
 class PlayState extends MusicBeatState {
+// === 3D model support ===
+public static var modelView:ModelView; // shared model view
+public var models:Array<ModelThing> = []; // list of active models
+
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
