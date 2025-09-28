@@ -3,7 +3,7 @@ package psychlua;
 import openfl.utils.Assets;
 
 #if (LUA_ALLOWED && flxanimate)
-import flxanimate._PsychFlxAnimate.FlxAnimate;
+import flxanimate.FlxAnimate;
 
 class FlxAnimateFunctions {
 	public static function implement(funk:FunkinLua) {
