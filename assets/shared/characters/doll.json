@@ -1,0 +1,28 @@
+{
+  "animations": [],
+  "image": "icon-doll",
+  "scale": 1,
+  "sing_duration": 4,
+  "healthicon": "icon-doll",
+  "position": [0, 0],
+  "camera_position": [0, 0],
+  "flip_x": false,
+  "no_antialiasing": true,
+  "healthbar_colors": [255, 255, 0],
+  "vocals_file": "",
+  "isModel": true,
+  "modelType": "md2",
+  "modelName": "doll",
+  "initYaw": -45,
+  "initPitch": 0,
+  "initRoll": 0,
+  "initX": 0,
+  "initY": 0,
+  "initZ": 0,
+  "scale3D": 15,
+  "noLoopList": ["singUP", "singDOWN", "singLEFT", "singRIGHT"],
+  "modelSpeed": {
+    "default": 1.66,
+    "idle": 1
+  }
+}

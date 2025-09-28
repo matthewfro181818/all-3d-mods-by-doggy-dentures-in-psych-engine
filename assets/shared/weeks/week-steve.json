@@ -1,0 +1,11 @@
+{
+  "storyName": "Minecraft Vibes",
+  "difficulties": "Normal,Hard",
+  "weekBackground": "stage",
+  "weekCharacters": ["steve", "bf", "gf"],
+  "startUnlocked": true,
+  "hideStory": false,
+  "songs": [
+    ["Dont-Mine-at-Night", "steve", [161, 161, 161]]
+  ]
+}

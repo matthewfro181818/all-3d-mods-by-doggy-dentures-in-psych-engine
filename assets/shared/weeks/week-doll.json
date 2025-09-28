@@ -1,0 +1,11 @@
+{
+  "storyName": "Creepy Doll",
+  "difficulties": "Normal,Hard",
+  "weekBackground": "stage",
+  "weekCharacters": ["doll", "bf", "gf"],
+  "startUnlocked": true,
+  "hideStory": false,
+  "songs": [
+    ["Super-Sonic-Racing", "doll", [161, 161, 161]]
+  ]
+}

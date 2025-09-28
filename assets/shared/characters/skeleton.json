@@ -1,0 +1,28 @@
+{
+  "animations": [],
+  "image": "icon-skeleton",
+  "scale": 1,
+  "sing_duration": 4,
+  "healthicon": "icon-skeleton",
+  "position": [0, 0],
+  "camera_position": [0, 0],
+  "flip_x": false,
+  "no_antialiasing": true,
+  "healthbar_colors": [255, 255, 255],
+  "vocals_file": "",
+  "isModel": true,
+  "modelType": "awd",
+  "modelName": "skeleton",
+  "initYaw": 90,
+  "initPitch": 0,
+  "initRoll": 0,
+  "initX": 0,
+  "initY": 50,
+  "initZ": 0,
+  "scale3D": 150,
+  "noLoopList": [],
+  "modelSpeed": {
+    "default": 1
+  },
+  "md5Anims": {}
+}

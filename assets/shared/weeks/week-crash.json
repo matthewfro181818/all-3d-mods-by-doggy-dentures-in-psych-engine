@@ -1,0 +1,11 @@
+{
+  "storyName": "Bandicoot Chaos",
+  "difficulties": "Normal,Hard",
+  "weekBackground": "stage",
+  "weekCharacters": ["crash", "bf", "gf"],
+  "startUnlocked": true,
+  "hideStory": false,
+  "songs": [
+    ["Rockslide-Rumble", "crash", [161, 161, 161]]
+  ]
+}

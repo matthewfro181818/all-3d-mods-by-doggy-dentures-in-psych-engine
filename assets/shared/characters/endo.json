@@ -1,0 +1,38 @@
+{
+  "animations": [],
+  "image": "icon-endo",
+  "scale": 1,
+  "sing_duration": 4,
+  "healthicon": "icon-endo",
+  "position": [0, 0],
+  "camera_position": [0, 0],
+  "flip_x": false,
+  "no_antialiasing": true,
+  "healthbar_colors": [200, 200, 200],
+  "vocals_file": "",
+  "isModel": true,
+  "modelType": "md5",
+  "modelName": "Collection",
+  "initYaw": -45,
+  "initPitch": 0,
+  "initRoll": 0,
+  "initX": 0,
+  "initY": -115,
+  "initZ": 0,
+  "scale3D": 25,
+  "noLoopList": [],
+  "modelSpeed": {
+    "default": 1,
+    "singRIGHT": 1.7,
+    "singLEFT": 2,
+    "singUP": 1.5,
+    "singDOWN": 1.5
+  },
+  "md5Anims": {
+    "idle": "Collection_11",
+    "singUP": "Collection_4",
+    "singLEFT": "Collection_17",
+    "singDOWN": "Collection_6",
+    "singRIGHT": "Collection_14"
+  }
+}

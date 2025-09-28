@@ -1,0 +1,11 @@
+{
+  "storyName": "Halloween Special",
+  "difficulties": "Normal,Hard",
+  "weekBackground": "stage",
+  "weekCharacters": ["skeleton", "bf", "gf"],
+  "startUnlocked": true,
+  "hideStory": false,
+  "songs": [
+    ["Spooky-Scary-Skeletons", "skeleton", [161, 161, 161]]
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "animations": [],
+  "image": "",
+  "scale": 1,
+  "sing_duration": 4,
+  "healthicon": "steve",
+
+  "position": [0, 0],
+  "camera_position": [0, 0],
+  "flip_x": false,
+  "no_antialiasing": true,
+  "healthbar_colors": [161, 161, 161],
+  "vocals_file": "",
+
+  "isModel": true,
+  "modelType": "md2",
+  "modelName": "steve",
+  "scaleModel": 30,
+
+  "initYaw": -45,
+  "initPitch": 0,
+  "initRoll": 0,
+  "initX": 0,
+  "initY": -28,
+  "initZ": 0,
+
+  "noLoopList": ["idle"],
+  "modelSpeed": {
+    "default": 1.68
+  }
+}

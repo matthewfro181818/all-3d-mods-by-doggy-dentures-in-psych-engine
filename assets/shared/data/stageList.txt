@@ -1,9 +1,6 @@
 stage
-spooky
-philly
-limo
-mall
-mallEvil
-school
-schoolEvil
-tank
+minecraft
+checker
+crashStage
+fnafStage
+skeletonStage

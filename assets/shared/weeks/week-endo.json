@@ -1,0 +1,11 @@
+{
+  "storyName": "Animatronic Horror",
+  "difficulties": "Normal,Hard",
+  "weekBackground": "stage",
+  "weekCharacters": ["endo", "bf", "gf"],
+  "startUnlocked": true,
+  "hideStory": false,
+  "songs": [
+    ["Break-My-Mind", "endo", [161, 161, 161]]
+  ]
+}
